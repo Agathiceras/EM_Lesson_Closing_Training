@@ -9,11 +9,11 @@
    TRAINING SETTINGS
    ===================================================================== */
 window.TRAINING = {
-  ID: 'cierre-em-latam',                                // short id, no spaces: used in the Sheet and in the LMS
-  COURSE: 'Cierre de clase en el modelo EM · LATAM',    // course name saved with every survey answer
-  // Google Sheet receiver (Apps Script Web app).
-  // ▼ PASTE THE WEB APP URL (it ends in /exec) BETWEEN THE QUOTES ON THE NEXT LINE ▼
-  SURVEY_URL: '',
+  ID: 'cierre-em-latam',                                // short id, no spaces: used in the LMS (do not change)
+  SHEET_ID: 'EM-LESSON-CLOSING',                        // "training" column in the Sheet: keeps this quality training apart from the EM-COURSE-* rows
+  COURSE: 'EM Lesson-Closing',                          // "course" column in the Sheet
+  // Google Sheet receiver (Apps Script Web app): "Product Course Content training responses", same one as the EM course trainings.
+  SURVEY_URL: 'https://script.google.com/macros/s/AKfycbyz59venGaOX2Vh-XcC67yHGAOTv4VoUZIMEXjo1tC5uQGt8fkSJR4ieuwUJbIU5gXpcQ/exec',
   // Empty = answers are NOT sent: the payload is printed in the browser console and the training still unlocks.
   LANGS: ['es', 'en', 'pl', 'it']                       // one text file per language: assets/content-<lang>.js
 };
@@ -778,7 +778,8 @@ const CONFIG = {
 };
 /* Developer mode: only with ?dev=1 in the URL. It unlocks every module, shows shortcuts to skip the
    surveys and sends nothing to the LMS. It keeps its own progress, separate from the real one. */
-const DEV = /[?&]dev=1(&|$)/.test(location.search);
+const DEV_ALLOWED = /[?&]dev=1(&|$)/.test(location.search);
+const DEV = DEV_ALLOWED;
 const PKEY = 'kl-cierre-em-latam-v2' + (DEV ? '-dev' : '');
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -903,7 +904,7 @@ function sendSurvey(box){
     const first = box.querySelector('.miss'); if (first) first.scrollIntoView({ behavior:'smooth', block:'center' });
     return;
   }
-  const payload = Object.assign({ survey:kind, training:T.ID, course:T.COURSE, lang:LANG, email, region, sent_at:new Date().toISOString() }, answers);
+  const payload = Object.assign({ survey:kind, training:T.SHEET_ID || T.ID, course:T.COURSE, lang:LANG, email, region, sent_at:new Date().toISOString() }, answers);
   btn.disabled = true; msg.textContent = SVUI.sending;
   let finished = false;
   const done = () => { if (finished) return; finished = true; surveyDone(kind, box, { email, region, sent_at:payload.sent_at }); };
